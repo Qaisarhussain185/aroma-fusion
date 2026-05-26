@@ -1,1 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARoma Fusion · Admin</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#FDF7ED;color:#2C1810;min-height:100vh}
 
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#2C1810}
+.login-box{background:#fff;border-radius:20px;padding:2.5rem 2rem;width:320px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.login-ico{font-size:3rem;margin-bottom:.5rem}
+.login-box h2{font-size:1.3rem;color:#2C1810;margin-bottom:.3rem}
+.login-box p{font-size:.8rem;color:#8A7260;margin-bottom:1.5rem}
+.login-box input{width:100%;padding:.8rem 1rem;border:1.5px solid #F5EDD6;border-radius:10px;font-size:.95rem;margin-bottom:.8rem;outline:none;transition:border-color .2s;text-align:center;letter-spacing:.1em}
+.login-box input:focus{border-color:#C17F24}
+.login-box button{width:100%;padding:.9rem;background:#C17F24;color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;transition:background .2s}
+.login-box button:hover{background:#9A6318}
+.err{color:#c0392b;font-size:.8rem;margin-top:.5rem;min-height:1.2rem}
+
+/* HEADER */
+.admin-header{background:#2C1810;color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.admin-header h1{font-size:1.1rem;font-weight:700}
+.admin-header .logout{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);padding:.4rem 1rem;border-radius:8px;cursor:pointer;font-size:.8rem;transition:background .2s}
+.admin-header .logout:hover{background:rgba(255,255,255,.22)}
+
+/* TABS */
+.tab-bar{display:flex;gap:.4rem;padding:1rem 1.5rem;border-bottom:1px solid #F5EDD6;background:#fff;overflow-x:auto}
+.tab-btn{padding:.45rem 1.1rem;border-radius:50px;border:1.5px solid #F5EDD6;background:none;font-size:.82rem;font-weight:600;color:#8A7260;cursor:pointer;transition:all .2s;white-space:nowrap}
+.tab-btn.on,.tab-btn:hover{background:#C17F24;border-color:#C17F24;color:#fff}
+
+/* BODY */
+.admin-body{padding:1.2rem 1.5rem;max-width:820px;margin:0 auto;padding-bottom:100px}
+.tab-pane{display:none}
+.tab-pane.on{display:block}
+.hint{font-size:.8rem;color:#8A7260;margin-bottom:1.2rem;line-height:1.5}
+
+/* CATEGORY HEADER */
+.cat-head{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:#C17F24;font-weight:700;margin:1.5rem 0 .6rem;padding-bottom:.4rem;border-bottom:2px solid #F5EDD6}
+
+/* ITEM ROW */
+.item-row{background:#fff;border-radius:12px;padding:.9rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.8rem;box-shadow:0 1px 6px rgba(44,24,16,.06);transition:opacity .2s}
+.item-row.soldout{opacity:.6}
+.item-ico{font-size:1.5rem;flex-shrink:0;width:36px;text-align:center}
+.item-info{flex:1;min-width:0}
+.item-name{font-size:.88rem;font-weight:600;color:#2C1810;margin-bottom:.3rem}
+.price-wrap{display:flex;align-items:center;gap:.35rem}
+.price-wrap label{font-size:.68rem;color:#8A7260;font-weight:600}
+.price-inp{border:1.5px solid #F5EDD6;border-radius:6px;padding:.28rem .5rem;width:75px;font-size:.85rem;font-weight:700;color:#C17F24;outline:none;transition:border-color .2s}
+.price-inp:focus{border-color:#C17F24}
+.soldout-ctrl{display:flex;flex-direction:column;align-items:center;gap:.25rem;flex-shrink:0}
+.soldout-ctrl label{font-size:.62rem;color:#8A7260;text-transform:uppercase;letter-spacing:.05em}
+.tog{width:40px;height:22px;background:#ddd;border-radius:50px;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.tog.on{background:#e74c3c}
+.tog::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tog.on::after{transform:translateX(18px)}
+.sold-badge{font-size:.6rem;background:#fde8e8;color:#c0392b;padding:.1rem .4rem;border-radius:20px;font-weight:700;margin-left:.4rem}
+
+/* HOURS */
+.hour-row{background:#fff;border-radius:12px;padding:.9rem 1.2rem;margin-bottom:.5rem;display:flex;align-items:center;gap:1rem;box-shadow:0 1px 6px rgba(44,24,16,.06)}
+.hour-day{font-weight:700;font-size:.88rem;min-width:90px;color:#2C1810}
+.hour-inp{border:1.5px solid #F5EDD6;border-radius:8px;padding:.4rem .75rem;font-size:.85rem;color:#2C1810;outline:none;flex:1;transition:border-color .2s}
+.hour-inp:focus{border-color:#C17F24}
+.hour-closed{display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:#8A7260;flex-shrink:0}
+
+/* SETTINGS */
+.setting-card{background:#fff;border-radius:12px;padding:1.2rem;margin-bottom:.8rem;box-shadow:0 1px 6px rgba(44,24,16,.06)}
+.setting-card label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#8A7260;font-weight:700;margin-bottom:.4rem}
+.setting-card input,.setting-card textarea{width:100%;padding:.65rem .9rem;border:1.5px solid #F5EDD6;border-radius:8px;font-size:.9rem;color:#2C1810;outline:none;transition:border-color .2s;font-family:inherit}
+.setting-card input:focus,.setting-card textarea:focus{border-color:#C17F24}
+.setting-card textarea{resize:vertical;min-height:70px}
+
+/* FOOTER */
+.admin-footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #F5EDD6;padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem;box-shadow:0 -4px 20px rgba(44,24,16,.08);z-index:99}
+.apply-btn{background:#25D366;color:#fff;border:none;padding:.8rem 1.8rem;border-radius:12px;font-size:.92rem;font-weight:700;cursor:pointer;transition:background .2s;display:flex;align-items:center;gap:.5rem}
+.apply-btn:hover{background:#1FAD54}
+.apply-btn:disabled{background:#ccc;cursor:not-allowed}
+.deploy-btn{background:#0969da}
+.deploy-btn:hover:not(:disabled){background:#0757ba}
+.footer-note{font-size:.72rem;color:#8A7260;line-height:1.4}
+.status{font-size:.8rem;padding:.45rem .9rem;border-radius:8px;font-weight:600}
+.status.ok{background:#d5f5e3;color:#1e8449}
+.status.err{background:#fde8e8;color:#c0392b}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ───────────────────────────────────── -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-box">
+    <div class="login-ico">🍽️</div>
+    <h2>ARoma Fusion</h2>
+    <p>Admin Panel — Enter password to continue</p>
+    <input type="password" id="pwd-inp" placeholder="Password" onkeydown="if(event.key==='Enter')login()">
+    <button onclick="login()">Login →</button>
+    <p id="login-err" class="err"></p>
+  </div>
+</div>
+
+<!-- ── PANEL ───────────────────────────────────── -->
+<div id="admin-panel" style="display:none">
+
+  <div class="admin-header">
+    <h1>🍽️ ARoma Fusion · Admin Panel</h1>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn on" onclick="showTab('menu',this)">📋 Menu Items</button>
+    <button class="tab-btn"   onclick="showTab('hours',this)">🕐 Opening Hours</button>
+    <button class="tab-btn"   onclick="showTab('settings',this)">⚙️ Settings</button>
+  </div>
+
+  <div class="admin-body">
+
+    <!-- MENU -->
+    <div id="tab-menu" class="tab-pane on">
+      <p class="hint">Toggle <strong>Sold Out</strong> for unavailable dishes, or edit prices. Changes apply when you click <em>Apply &amp; Download</em>.</p>
+      <div id="menu-list"></div>
+    </div>
+
+    <!-- HOURS -->
+    <div id="tab-hours" class="tab-pane">
+      <p class="hint">Edit opening hours for each day. Leave blank or type "Closed" for days you don't operate.</p>
+      <div id="hours-list"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="tab-settings" class="tab-pane">
+      <div class="setting-card">
+        <label>WhatsApp Number (digits only, no spaces or +)</label>
+        <input type="text" id="set-wa" placeholder="923371400156">
+      </div>
+      <div class="setting-card">
+        <label>Address shown on website</label>
+        <input type="text" id="set-addr">
+      </div>
+      <div class="setting-card">
+        <label>Admin Password (change here, then re-download)</label>
+        <input type="text" id="set-pass" placeholder="aroma2025">
+      </div>
+      <div style="margin-top:1.5rem;padding-top:1rem;border-top:2px solid #F5EDD6">
+        <p class="hint" style="margin-bottom:.8rem"><strong style="color:#0969da">GitHub Auto-Deploy</strong> — Enter once and use 🚀 Save &amp; Deploy to push changes live without downloading anything.</p>
+      </div>
+      <div class="setting-card">
+        <label>GitHub Repository (username/repo-name)</label>
+        <input type="text" id="set-repo" placeholder="your-username/aroma-fusion">
+      </div>
+      <div class="setting-card">
+        <label>GitHub Personal Access Token</label>
+        <input type="password" id="set-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+        <p style="font-size:.7rem;color:#8A7260;margin-top:.35rem">github.com → Settings → Developer settings → Personal access tokens (classic) → New token → tick <strong>repo</strong> → Generate</p>
+      </div>
+      <div class="setting-card">
+        <label>Branch</label>
+        <input type="text" id="set-branch" placeholder="main" value="main">
+      </div>
+      <button onclick="connectGitHub()" style="margin-top:.5rem;background:#0969da;color:#fff;border:none;padding:.75rem 1.5rem;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;width:100%">🔗 Connect &amp; Load from GitHub</button>
+      <p id="connect-status" style="font-size:.78rem;margin-top:.5rem;min-height:1.2rem;color:#1e8449"></p>
+    </div>
+
+  </div>
+
+  <div class="admin-footer">
+    <div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.4rem">
+        <button class="apply-btn deploy-btn" onclick="deployToGitHub()" id="deploy-btn">🚀 Save &amp; Deploy</button>
+        <button class="apply-btn" onclick="generateSite()" id="apply-btn" style="background:#8A7260;font-size:.82rem;padding:.65rem 1.1rem">💾 Download</button>
+      </div>
+      <p class="footer-note" id="footer-note">Go to <strong>Settings</strong> tab → add GitHub repo &amp; token to enable auto-deploy.</p>
+    </div>
+    <span id="status-msg"></span>
+  </div>
+
+</div>
+
+<script>
+/* ── CONFIG ── change password here */
+let ADMIN_PASS = 'aroma2025';
+
+/* ── STATE ── */
+let siteHTML = '';
+let menuChanges = {};   // {id: {soldOut, price}}
+let hoursChanges = {};  // {day: timeString}
+
+const CAT_LABELS = {
+  popular:   '⭐ Popular Items',
+  breakfast: '🍳 Nashta Special',
+  parathas:  '🫓 Paratha Sharathay',
+  chicken:   '🍗 Chicken & Beef',
+  sabzi:     '🥘 Desi Sabzi & Daal',
+  snacks:    '🥟 Snacks & Sandwiches',
+  desserts:  '🍮 Desserts',
+  sides:     '🫓 Sides & Add-ons',
+  biryani:   '🍛 Biryani Deals'
+};
+
+/* ── LOGIN ── */
+function login(){
+  const v = document.getElementById('pwd-inp').value;
+  if(v === ADMIN_PASS){
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-panel').style.display  = 'block';
+    loadSite();
+  } else {
+    document.getElementById('login-err').textContent = 'Wrong password. Try again.';
+    document.getElementById('pwd-inp').value = '';
+  }
+}
+function logout(){ location.reload(); }
+
+/* ── TABS ── */
+function showTab(id, btn){
+  document.querySelectorAll('.tab-pane').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('on');
+  btn.classList.add('on');
+}
+
+/* ── LOAD ── */
+async function loadSite(){
+  /* Try GitHub first (works locally + on Netlify) */
+  const token  = localStorage.getItem('gh_token');
+  const repo   = localStorage.getItem('gh_repo');
+  const branch = localStorage.getItem('gh_branch') || 'main';
+
+  if(token && repo){
+    try{
+      const res = await fetch(
+        `https://api.github.com/repos/${repo}/contents/index.html?ref=${branch}`,
+        {headers:{'Authorization':'token '+token}}
+      );
+      if(res.ok){
+        const data = await res.json();
+        siteHTML = decodeURIComponent(escape(atob(data.content.replace(/\n/g,''))));
+        parseAll();
+        return;
+      }
+    }catch(e){}
+  }
+
+  /* Fallback: same-origin fetch (only works when served, e.g. on Netlify) */
+  try{
+    const res = await fetch('index.html?_='+Date.now());
+    if(!res.ok) throw new Error();
+    siteHTML = await res.text();
+    parseAll();
+  } catch(e){
+    setStatus('Cannot load index.html. Go to Settings → enter your GitHub repo & token, then re-login.','err');
+    document.getElementById('apply-btn').disabled = true;
+  }
+}
+
+function parseAll(){
+  parseMenu();
+  parseHours();
+  parseSettings();
+  loadGitHubSettings();
+}
+
+/* ── PARSE MENU ── */
+function parseMenu(){
+  const m = siteHTML.match(/const MENU\s*=\s*(\{[\s\S]*?\n\};)/);
+  if(!m) return;
+  let parsed = {};
+  try{ parsed = new Function('return '+m[1].replace(/;$/,''))(); } catch(e){ return; }
+  renderMenuUI(parsed);
+}
+
+function renderMenuUI(menu){
+  const el = document.getElementById('menu-list');
+  el.innerHTML = '';
+  Object.entries(menu).forEach(([cat, items])=>{
+    const h = document.createElement('div');
+    h.className = 'cat-head';
+    h.textContent = CAT_LABELS[cat] || cat;
+    el.appendChild(h);
+    items.forEach(item=>{
+      const soldOut = menuChanges[item.id]?.soldOut ?? item.soldOut ?? false;
+      const price   = menuChanges[item.id]?.price   ?? item.price;
+      const row = document.createElement('div');
+      row.className = 'item-row'+(soldOut?' soldout':'');
+      row.id = 'item-row-'+item.id;
+      row.innerHTML = `
+        <div class="item-ico">${item.ico||'🍽️'}</div>
+        <div class="item-info">
+          <div class="item-name">${item.name}${soldOut?'<span class="sold-badge">SOLD OUT</span>':''}</div>
+          <div class="price-wrap">
+            <label>Rs.</label>
+            <input class="price-inp" type="number" value="${price}" min="0"
+                   onchange="setPrice(${item.id},this.value)">
+          </div>
+        </div>
+        <div class="soldout-ctrl">
+          <label>Sold Out</label>
+          <button class="tog${soldOut?' on':''}" onclick="toggleSold(${item.id},this,'${item.name.replace(/'/g,"\\'")}')"></button>
+        </div>`;
+      el.appendChild(row);
+    });
+  });
+}
+
+function toggleSold(id, btn, name){
+  if(!menuChanges[id]) menuChanges[id] = {};
+  menuChanges[id].soldOut = !btn.classList.contains('on');
+  const soldOut = menuChanges[id].soldOut;
+  btn.classList.toggle('on');
+  const row = document.getElementById('item-row-'+id);
+  row.classList.toggle('soldout', soldOut);
+  const nameEl = row.querySelector('.item-name');
+  const badge  = nameEl.querySelector('.sold-badge');
+  if(soldOut && !badge){
+    const b = document.createElement('span');
+    b.className = 'sold-badge'; b.textContent = 'SOLD OUT';
+    nameEl.appendChild(b);
+  } else if(!soldOut && badge){ badge.remove(); }
+}
+
+function setPrice(id, val){
+  if(!menuChanges[id]) menuChanges[id] = {};
+  menuChanges[id].price = parseInt(val)||0;
+}
+
+/* ── PARSE HOURS ── */
+function parseHours(){
+  const rows = [...siteHTML.matchAll(/<div class="hrow"><span class="day">([^<]+)<\/span><span class="time">([^<]+)<\/span><\/div>/g)];
+  const el = document.getElementById('hours-list');
+  el.innerHTML = '';
+  rows.forEach(([_, day, time])=>{
+    const row = document.createElement('div');
+    row.className = 'hour-row';
+    row.innerHTML = `
+      <div class="hour-day">${day}</div>
+      <input class="hour-inp" type="text" value="${time}" placeholder="10:30 AM – 10:30 PM"
+             onchange="hoursChanges['${day}']=this.value">`;
+    el.appendChild(row);
+  });
+}
+
+/* ── PARSE SETTINGS ── */
+function parseSettings(){
+  const wa   = siteHTML.match(/const WA = '(\d+)'/);
+  const addr = siteHTML.match(/class="ci-val">([^<]*Rawalpindi[^<]*)<\/div>/);
+  if(wa)   document.getElementById('set-wa').value   = wa[1];
+  if(addr) document.getElementById('set-addr').value = addr[1].trim();
+  document.getElementById('set-pass').value = ADMIN_PASS;
+}
+
+/* ── BUILD HTML ── shared by download and deploy */
+function buildUpdatedHTML(){
+  if(!siteHTML){ setStatus('Site not loaded.','err'); return null; }
+
+  let html = siteHTML;
+
+  /* 1. Menu changes */
+  const menuMatch = html.match(/(const MENU\s*=\s*\{[\s\S]*?\n\};)/);
+  if(menuMatch && Object.keys(menuChanges).length){
+    let menuText = menuMatch[1];
+    Object.entries(menuChanges).forEach(([id,ch])=>{
+      const n = parseInt(id);
+      if(ch.price !== undefined){
+        menuText = menuText.replace(
+          new RegExp(`(\\{id:${n},(?:[^}](?!id:))*?price:)\\d+`,'g'),
+          (m,pre)=>pre+ch.price
+        );
+      }
+      if(ch.soldOut === true){
+        menuText = menuText.replace(
+          new RegExp(`(\\{id:${n},[^}]+?)(,soldOut:(?:true|false))?\\}`, 'g'),
+          (_,pre)=>pre+',soldOut:true}'
+        );
+      } else if(ch.soldOut === false){
+        menuText = menuText.replace(
+          new RegExp(`(\\{id:${n},[^}]+?),soldOut:true`, 'g'),
+          '$1'
+        );
+      }
+    });
+    html = html.replace(menuMatch[1], menuText);
+  }
+
+  /* 2. Hours */
+  Object.entries(hoursChanges).forEach(([day,time])=>{
+    html = html.replace(
+      new RegExp(`(<div class="hrow"><span class="day">${day}<\\/span><span class="time">)[^<]*(<\\/span><\\/div>)`),
+      `$1${time}$2`
+    );
+  });
+
+  /* 3. WA number */
+  const newWA = document.getElementById('set-wa').value.trim();
+  if(newWA){
+    html = html.replace(/const WA = '\d+'/g, `const WA = '${newWA}'`);
+    html = html.replace(/wa\.me\/\d+/g, `wa.me/${newWA}`);
+  }
+
+  /* 4. Address */
+  const newAddr = document.getElementById('set-addr').value.trim();
+  if(newAddr){
+    html = html.replace(
+      /(class="ci-val">)[^<]*(Rawalpindi)[^<]*(<\/div>)/,
+      `$1${newAddr}$3`
+    );
+  }
+
+  /* 5. Admin password */
+  const newPass = document.getElementById('set-pass').value.trim();
+  if(newPass) ADMIN_PASS = newPass;
+
+  return html;
+}
+
+/* ── GENERATE SITE (download) ── */
+function generateSite(){
+  const html = buildUpdatedHTML();
+  if(!html) return;
+
+  const blob = new Blob([html],{type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'index.html';
+  document.body.appendChild(a);
+  a.click(); a.remove();
+
+  siteHTML = html;
+  menuChanges  = {};
+  hoursChanges = {};
+
+  setStatus('Downloaded! Drag your Aroma Fusion folder to Netlify to go live.','ok');
+}
+
+/* ── CONNECT & LOAD FROM GITHUB ── */
+async function connectGitHub(){
+  const token  = document.getElementById('set-token').value.trim();
+  const repo   = document.getElementById('set-repo').value.trim();
+  const branch = document.getElementById('set-branch').value.trim() || 'main';
+  const statusEl = document.getElementById('connect-status');
+
+  if(!token || !repo){
+    statusEl.style.color = '#c0392b';
+    statusEl.textContent = 'Enter both repo and token first.';
+    return;
+  }
+
+  localStorage.setItem('gh_token', token);
+  localStorage.setItem('gh_repo',  repo);
+  localStorage.setItem('gh_branch', branch);
+
+  statusEl.style.color = '#8A7260';
+  statusEl.textContent = 'Connecting…';
+
+  try{
+    const res = await fetch(
+      `https://api.github.com/repos/${repo}/contents/index.html?ref=${branch}`,
+      {headers:{'Authorization':'token '+token}}
+    );
+    if(!res.ok) throw new Error((await res.json()).message || 'GitHub error');
+    const data = await res.json();
+    siteHTML = decodeURIComponent(escape(atob(data.content.replace(/\n/g,''))));
+    parseAll();
+    document.getElementById('apply-btn').disabled = false;
+    statusEl.style.color = '#1e8449';
+    statusEl.textContent = 'Connected! Menu and hours loaded from GitHub.';
+    updateFooterNote(true);
+  }catch(e){
+    statusEl.style.color = '#c0392b';
+    statusEl.textContent = 'Failed: ' + e.message;
+  }
+}
+
+/* ── DEPLOY TO GITHUB ── */
+async function deployToGitHub(){
+  const token  = document.getElementById('set-token').value.trim();
+  const repo   = document.getElementById('set-repo').value.trim();
+  const branch = document.getElementById('set-branch').value.trim() || 'main';
+
+  if(!token || !repo){
+    setStatus('Add GitHub repo & token in Settings first.','err');
+    showTab('settings', document.querySelectorAll('.tab-btn')[2]);
+    return;
+  }
+
+  localStorage.setItem('gh_token', token);
+  localStorage.setItem('gh_repo',  repo);
+  localStorage.setItem('gh_branch', branch);
+
+  /* Auto-load from GitHub if siteHTML not yet fetched */
+  if(!siteHTML){
+    setStatus('Loading from GitHub…','ok');
+    await connectGitHub();
+    if(!siteHTML){ setStatus('Could not load site from GitHub. Check Settings.','err'); return; }
+  }
+
+  const html = buildUpdatedHTML();
+  if(!html) return;
+
+  const btn = document.getElementById('deploy-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Deploying…';
+  setStatus('Pushing to GitHub…','ok');
+
+  try{
+    const apiUrl = `https://api.github.com/repos/${repo}/contents/index.html`;
+    const headers = {'Authorization':'token '+token,'Content-Type':'application/json'};
+
+    let sha = null;
+    const get = await fetch(`${apiUrl}?ref=${branch}`,{headers});
+    if(get.ok){ const d = await get.json(); sha = d.sha; }
+
+    const encoded = btoa(unescape(encodeURIComponent(html)));
+    const body = {message:'Admin: update menu/hours/settings', content:encoded, branch};
+    if(sha) body.sha = sha;
+
+    const put = await fetch(apiUrl,{method:'PUT',headers,body:JSON.stringify(body)});
+    if(!put.ok){ const e = await put.json(); throw new Error(e.message||'GitHub API error'); }
+
+    siteHTML = html;
+    menuChanges  = {};
+    hoursChanges = {};
+
+    setStatus('Deployed! Site goes live on Netlify in ~45 seconds.','ok');
+    updateFooterNote(true);
+
+  }catch(e){
+    setStatus('Deploy failed: '+e.message,'err');
+  }finally{
+    btn.disabled = false;
+    btn.textContent = '🚀 Save & Deploy';
+  }
+}
+
+/* ── GITHUB SETTINGS (localStorage) ── */
+function loadGitHubSettings(){
+  const token  = localStorage.getItem('gh_token')  || '';
+  const repo   = localStorage.getItem('gh_repo')   || '';
+  const branch = localStorage.getItem('gh_branch') || 'main';
+  document.getElementById('set-token').value  = token;
+  document.getElementById('set-repo').value   = repo;
+  document.getElementById('set-branch').value = branch;
+  updateFooterNote(!!token && !!repo);
+}
+
+function updateFooterNote(ready){
+  const el = document.getElementById('footer-note');
+  if(!el) return;
+  el.innerHTML = ready
+    ? 'Site goes live on Netlify in ~45 seconds after deploy.'
+    : 'Go to <strong>Settings</strong> tab → add GitHub repo &amp; token to enable auto-deploy.';
+}
+
+/* ── HELPERS ── */
+function setStatus(msg, type){
+  const el = document.getElementById('status-msg');
+  el.textContent = msg;
+  el.className = 'status '+type;
+  setTimeout(()=>{el.textContent='';el.className='status';},6000);
+}
+</script>
+</body>
+</html>
